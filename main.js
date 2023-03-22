@@ -5,50 +5,12 @@ import { VertexNormalsHelper } from 'three/addons/helpers/VertexNormalsHelper.js
 
 
 let scene, camera, renderer, cube1, torus, plane;
-let sphere, box, cylinder;
+let sphere, box, cylinder, light, ambient;
 let geometry, material;
-let ADD = 0.02;
+let ADD = 0.2;
 let normals
 
-let addCube = function() {
-    geometry = new THREE.BoxGeometry(5, 5, 5);
-    // material = new THREE.MeshNormalMaterial();
-    // material = new THREE.MeshLambertMaterial({
-    //     side: THREE.DoubleSide,
-    //     color: 0x7fc5f9,
-    //     emissive: 0x25673d,
-    //     emissiveIntensity: 0.8
-    // });
-    material = new THREE.MeshStandardMaterial({
-        side: THREE.DoubleSide,
-        color: 0x7fc5f9,
-        emissive: 0x25673d,
-        emissiveIntensity: 0.4,
-        metalness: 1,
-        roughness: 1
-        // shininess:
-        // specular:
-    });
 
-    cube1 = new THREE.Mesh(geometry, material);
-    cube1.position.z = -3;
-    cube1.position.y = -5;
-
-    let directionalLight = new THREE.DirectionalLight(0xffffff)
-    scene.add(directionalLight);
-    scene.add(cube1);
-}
-
-let addPlane = function () {
-    geometry = new THREE.PlaneGeometry(1000, 1000, 50, 50)
-    material = new THREE.MeshBasicMaterial({color: 0Xa6f995, wireframe: true});
-
-    plane = new THREE.Mesh(geometry, material);
-    plane.rotation.x = Math.PI / 2;
-    plane.position.y = -100;
-
-    scene.add(plane);
-}
 
 let addGeometries = function() {
   // scene.add(normals)
@@ -57,25 +19,46 @@ let addGeometries = function() {
 let init = function() {
     scene = new THREE.Scene();
     scene.background = new THREE.Color(0xffffff);
-    
     camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 1000);
     camera.position.z = 15;
+
+    ambient = new THREE.AmbientLight(0xffffff);
+    //light = new THREE.HemisphereLight(0x00ff00,0x0000ff)
+    //light = new THREE.DirectionalLight(0xffffff)
+    light = new THREE.PointLight(0xffffff, 2, 20, 2)
+    light.position.y = 1
+    light.position.z = 2
+    light.position.x =0
+
+    //const helper = new THREE.DirectionalLightHelper( light, 5, 0x000000 );
     
-    addGeometries();
-    
+
+    scene.add(light);
+    scene.add(ambient);
+    //scene.add(helper);
+
     renderer = new THREE.WebGLRenderer();   
     renderer.setSize(window.innerWidth, window.innerHeight); 
     document.body.appendChild(renderer.domElement);
 };
 
 let addSphere = function() {
-  let geometry = new THREE.SphereGeometry(5, 30, 30)
-  let material = new THREE.MeshBasicMaterial({color: 0xbbbbbb, wireframe: true});
+  geometry = new THREE.SphereGeometry(5, 30, 30)
+  //material = new THREE.MeshBasicMaterial({color: 0xbbbbbb, wireframe: true});
+  material = new THREE.MeshStandardMaterial({
+    side: THREE.DoubleSide,
+    color: 0X0f1d89,
+    // emissive: 0x25673d,
+    // emissiveIntensity: 0.4,
+    // metalness: 1,
+    // roughness: 1,
+    shininess:100
+});
   sphere = new THREE.Mesh(geometry, material)
-  normals = new VertexNormalsHelper( sphere, 5, 0xff0000 );
+  //normals = new VertexNormalsHelper( sphere, 5, 0xff0000 );
   
   scene.add(sphere)
-  scene.add(normals)
+  //sscene.add(normals)
 }
 
 let addTorus = function() {
@@ -109,6 +92,40 @@ let addCylinder = function(){
 
 }
 
+let addCube = function() {
+    geometry = new THREE.BoxGeometry(5, 5, 5);
+    // material = new THREE.MeshNormalMaterial();
+    material = new THREE.MeshStandardMaterial({
+        side: THREE.DoubleSide,
+        color: 0X0f1d89,
+        // emissive: 0x25673d,
+        // emissiveIntensity: 0.4,
+        // metalness: 1,
+        // roughness: 1,
+        shininess:100
+    });
+
+    cube1 = new THREE.Mesh(geometry, material);
+    cube1.position.z = 1;
+    cube1.position.y = 1;
+    cube1.position.x = 5;
+
+    // let directionalLight = new THREE.DirectionalLight(0xffffff)
+    // scene.add(directionalLight);
+    scene.add(cube1);
+}
+
+let addPlane = function () {
+    geometry = new THREE.PlaneGeometry(1000, 1000, 50, 50)
+    material = new THREE.MeshStandardMaterial({color: 0X693421, wireframe: true, shininess:100});
+
+    plane = new THREE.Mesh(geometry, material);
+    plane.rotation.x = Math.PI / 2;
+    plane.position.y = -100;
+
+    scene.add(plane);
+}
+
 let addParticles = function() {
     material = new THREE.PointsMaterial({color: 0xbbbbbb, size:0.5})
     geometry = new THREE.BufferGeometry(3, 2, 4)
@@ -129,20 +146,29 @@ let addParticles = function() {
 }
 
 let mainLoop = function() {
-    cube1.rotation.x += ADD;
+    // cube1.rotation.x += ADD;
     // box.position.z -= ADD;
-    // if(box.position.z > 6 || box.position.z < -16)
+    // light.intensity += ADD;
+    // light.position.x += ADD
+    // if(light.position.x >= 10 || light.position.x <= -10)
     //     ADD *= -1;
-    
-    //normals.update()
+
+    // if(light.intensity >= 8 || light.intensity <= 1)
+    // console.log('ADD', ADD)
+    //     ADD *= -1;
+   //light.target = cube1
+    // light.intensity
+    //console.log(light.intensity)
+    //normals.update()    
+    //helper.update()
     renderer.render(scene, camera);
     requestAnimationFrame(mainLoop);
 };
 
 init();
-addCube()
-//addParticles()
-//addSphere() 
+// addCube()
+// addPlane()
+addSphere()
 mainLoop();
 
 
