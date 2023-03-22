@@ -7,7 +7,7 @@ import { VertexNormalsHelper } from 'three/addons/helpers/VertexNormalsHelper.js
 let scene, camera, renderer, cube1, torus, plane;
 let sphere, box, cylinder, light, ambient;
 let geometry, material;
-let ADD = 0.2;
+let ADD = 0.2, theta = 0;
 let normals
 
 
@@ -43,7 +43,7 @@ let init = function() {
 };
 
 let addSphere = function() {
-  geometry = new THREE.SphereGeometry(5, 30, 30)
+  geometry = new THREE.SphereGeometry(0.1, 30, 30)
   //material = new THREE.MeshBasicMaterial({color: 0xbbbbbb, wireframe: true});
   material = new THREE.MeshStandardMaterial({
     side: THREE.DoubleSide,
@@ -57,6 +57,10 @@ let addSphere = function() {
   sphere = new THREE.Mesh(geometry, material)
   //normals = new VertexNormalsHelper( sphere, 5, 0xff0000 );
   
+  sphere.position.y = 1
+    sphere.position.z = 2
+    sphere.position.x =0
+
   scene.add(sphere)
   //sscene.add(normals)
 }
@@ -93,7 +97,7 @@ let addCylinder = function(){
 }
 
 let addCube = function() {
-    geometry = new THREE.BoxGeometry(5, 5, 5);
+    geometry = new THREE.BoxGeometry(3,3,3);
     // material = new THREE.MeshNormalMaterial();
     material = new THREE.MeshStandardMaterial({
         side: THREE.DoubleSide,
@@ -106,9 +110,9 @@ let addCube = function() {
     });
 
     cube1 = new THREE.Mesh(geometry, material);
-    cube1.position.z = 1;
-    cube1.position.y = 1;
-    cube1.position.x = 5;
+    cube1.position.z = 0;
+    cube1.position.y = 0;
+    cube1.position.x = 0;
 
     // let directionalLight = new THREE.DirectionalLight(0xffffff)
     // scene.add(directionalLight);
@@ -146,6 +150,17 @@ let addParticles = function() {
 }
 
 let mainLoop = function() {
+
+
+    // we simulate the light with the sphere
+    light.position.x = 6 * Math.sin(theta)
+    light.position.z = 6 * Math.cos(theta)
+    sphere.position.x = light.position.x 
+    sphere.position.z = light.position.z
+    theta+=ADD
+    console.log(theta)
+
+
     // cube1.rotation.x += ADD;
     // box.position.z -= ADD;
     // light.intensity += ADD;
@@ -166,7 +181,7 @@ let mainLoop = function() {
 };
 
 init();
-// addCube()
+addCube()
 // addPlane()
 addSphere()
 mainLoop();
