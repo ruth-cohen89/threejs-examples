@@ -8,8 +8,9 @@ let scene, camera, renderer, cube1, torus, plane;
 let sphere, box, cylinder, light, ambient;
 let geometry, material;
 let ADD = 0.02, theta = 0;
-let normals
+const RADIUS = 5, BASE_X = -20, BASE_Y = -20;
 
+let normals
 let addLight = function() {
     ambient = new THREE.AmbientLight(0xffffff);
     //light = new THREE.HemisphereLight(0x00ff00,0x0000ff)
@@ -30,8 +31,10 @@ let init = function() {
     scene = new THREE.Scene();
     scene.background = new THREE.Color(0xffffff);
     camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 1000);
-    camera.position.z = 15;
-    camera.position.x = 0;
+    //camera = new THREE.OrthographicCamera(-300, 300, 400, -400, 1, 1000);
+    //camera.position.z = 10;
+    //camera.position.x = 0;
+    camera.position.set(0, 0, 40);
 
     renderer = new THREE.WebGLRenderer();   
     renderer.setSize(window.innerWidth, window.innerHeight); 
@@ -42,18 +45,20 @@ let addSphere = function() {
   geometry = new THREE.SphereGeometry(1, 30, 30)
   //material = new THREE.MeshBasicMaterial({color: 0xbbbbbb, wireframe: true});
   material = new THREE.MeshStandardMaterial({
-    side: THREE.DoubleSide,
-    color: 0xff0000
+    shininess: 100, side: THREE.DoubleSide,
+    color: 0X0450fb
 });
-  sphere = new THREE.Mesh(geometry, material)
-  //normals = new VertexNormalsHelper( sphere, 5, 0xff0000 );
-  
-  sphere.position.y = 0.1
-    sphere.position.z = 10
-    sphere.position.x = 0
 
-  scene.add(sphere)
-  //sscene.add(normals)
+    for(let i = 0; i < 4; i++)
+        for(let j = 0; j < 4; j++) {
+            geometry = new THREE.SphereGeometry(RADIUS, 30, 30);
+            sphere = new THREE.Mesh(geometry, material);
+            sphere.position.x = BASE_X + j * 2 * (RADIUS+0.5);
+            sphere.position.z = -2*RADIUS * i;
+            sphere.position.y = BASE_Y + i * RADIUS;
+            scene.add(sphere);
+        }  
+
 }
 
 let addTorus = function() {
@@ -158,12 +163,19 @@ const mesh = new THREE.Mesh( geometry, material );
 }
 
 let mainLoop = function() {
-    //camera.lookAt(new THREE.Vector3(0, 0, 0))
-    camera.position.x = 40 * Math.sin(theta)
-    camera.position.z = 40 * Math.cos(theta)
-    theta += ADD
+    camera.lookAt(new THREE.Vector3(0, 0, 0))
+
+    sphere.position.y = 20 * Math.sin(theta)
+    sphere.position.x = 20 * Math.cos(theta)
+    theta+=ADD
+    // camera.position.x = 40 * Math.sin(theta)
+    // camera.position.z = 40 * Math.cos(theta)
+    // theta += ADD
     // camera.fov += 0.5
-    // camera.updateProjectionMatrix ()
+//     camera.position.x = 40 * Math.sin(theta);
+//     camera.position.z = 40 * Math.cos(theta);
+//     theta += ADD;
+//    camera.updateProjectionMatrix ()
     // if(camera.fov > 100 || camera.fov < 50){
     //         ADD *=-1
   
