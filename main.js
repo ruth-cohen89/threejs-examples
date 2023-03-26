@@ -14,16 +14,21 @@ let balloons = []
 
 
 let addLight = function() {
-    ambient = new THREE.AmbientLight(0xffffff);
+    //ambient = new THREE.AmbientLight(0xffffff);
     //light = new THREE.HemisphereLight(0x00ff00,0x0000ff)
-    //light = new THREE.DirectionalLight(0xffffff)
-    light = new THREE.SpotLight(0xffffff, 2, 20, 2)
+    light = new THREE.DirectionalLight(0xffffff)
+    light = new THREE.SpotLight(0xffffff, 1)
     light.position.y = 1
     light.position.z = 2
     light.position.x =0
 
+    light.castShadow = true
+    light.shadow.bias = 0.0001
+    light.shadow.mapSize.width = 2048
+    light.shadow.mapSize.height = 1024
+
     scene.add(light);
-    scene.add(ambient);
+    //scene.add(ambient);
     //scene.add(helper);
 }
 
@@ -59,18 +64,23 @@ let onMouseClick = function(e) {
 let init = function() {
     scene = new THREE.Scene();
     scene.background = new THREE.Color(0xffffff);
+    scene.background = new THREE.Color(0x000000);
+    scene.fog = new THREE.Fog( 0x000000);
+
     camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 1000);
     //camera.position.set(0, 0, 40);
     target = new THREE.Object3D()
     camera.lookAt(target.position)
 
-    addSphere()
-    rayCast = new THREE.Raycaster() 
-    mouse = new THREE.Vector2();
-    mouse.x = mouse.y = -1 
+    //addSphere()
+    // rayCast = new THREE.Raycaster() 
+    // mouse = new THREE.Vector2();
+    // mouse.x = mouse.y = -1 
 
     renderer = new THREE.WebGLRenderer();   
     renderer.setSize(window.innerWidth, window.innerHeight); 
+    renderer.shadowMap.enabled = true
+    renderer.shadowMap.type = THREE.PCFShadowMap
 
     document.body.appendChild(renderer.domElement);
     //document.addEventListener('click', onMouseClick, false)
@@ -78,19 +88,19 @@ let init = function() {
 };
 
 let addSphere = function() {
-    let texture = new THREE.TextureLoader().load('https://images.pexels.com/photos/64296/pexels-photo-64296.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2')
-    // material = new THREE.MeshStandardMaterial({
-    //     side: THREE.DoubleSide,
-    //     color: 0X0f1d89,
-    //     shininess:100
-    // });
+    //let texture = new THREE.TextureLoader().load('https://images.pexels.com/photos/64296/pexels-photo-64296.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2')
+    material = new THREE.MeshStandardMaterial({
+        side: THREE.DoubleSide,
+        color: 0X0f1d89,
+        shininess:100
+    });
 
-    texture.wrapS = THREE.RepeatWrapping
-    texture.wrapT = THREE.RepeatWrapping
+    // texture.wrapS = THREE.RepeatWrapping
+    // texture.wrapT = THREE.RepeatWrapping
 
-    texture.repeat.set(4, 4)
+    // texture.repeat.set(4, 4)
 
-    material = new THREE.MeshBasicMaterial({map: texture, side: THREE.DoubleSide})
+    // material = new THREE.MeshBasicMaterial({map: texture, side: THREE.DoubleSide})
 
     geometry = new THREE.SphereGeometry(60,50,50)
     // material = new THREE.MeshStandardMaterial({
@@ -109,7 +119,9 @@ let addSphere = function() {
             sphere.position.y = Math.random() * (20 - -30) + -20;
             sphere.position.z = Math.random() * (20 - -2) + -20;
             scene.add(sphere);
-            balloons.push(sphere)
+
+            //sphere.castShadow = true
+           // balloons.push(sphere)
         //}  
 }
 
@@ -145,30 +157,42 @@ let addCylinder = function(){
 }
 
 let addCube = function() {
-    geometry = new THREE.BoxGeometry(60,60,60);
-    let texture = new THREE.TextureLoader().load('https://thumbs.dreamstime.com/z/aster-flowers-art-design-26968847.jpg')
-    // material = new THREE.MeshStandardMaterial({
-    //     side: THREE.DoubleSide,
-    //     color: 0X0f1d89,
-    //     shininess:100
-    // });
+    geometry = new THREE.BoxGeometry(5, 5, 5);
+    //let texture = new THREE.TextureLoader().load('https://thumbs.dreamstime.com/z/aster-flowers-art-design-26968847.jpg')
+    //material = new THREE.MeshBasicMaterial({map: texture, side: THREE.DoubleSide})    
 
-    material = new THREE.MeshBasicMaterial({map: texture, side: THREE.DoubleSide})
+    material = new THREE.MeshStandardMaterial({
+        side: THREE.DoubleSide,
+        color: 0Xdff913,
+        shininess:100, 
+        side:THREE.DoubleSide
+    });
+
     cube1 = new THREE.Mesh(geometry, material);
     cube1.position.z = -13;
     cube1.position.y = -2;
-    cube1.position.x = 2;
+    cube1.position.x = -5;
+    
+    //cube1.castShadow = true 
 
+    geometry = new THREE.BoxGeometry(5, 6, 4);
+    let cube2 = new THREE.Mesh(geometry, material);
+        cube2.position.set(5, 2, -13);
+        cube2.castShadow = false;
     scene.add(cube1);
+    scene.add(cube2);
 }
 
 let addPlane = function () {
     geometry = new THREE.PlaneGeometry(1000, 1000, 50, 50)
+    geometry = new THREE.PlaneGeometry(10, 10);
     material = new THREE.MeshStandardMaterial({color: 0X693421, wireframe: true, shininess:100});
 
     plane = new THREE.Mesh(geometry, material);
     plane.rotation.x = Math.PI / 2;
     plane.position.y = -100;
+    plane.castShadow = false;
+	plane.receiveShadow = true;
 
     scene.add(plane);
 }
@@ -211,22 +235,26 @@ let addTriangle = function(){
 }
 
 let mainLoop = function() {
+    light.position.x = 10 * Math.sin(theta);
+        light.position.z = 10 * Math.cos(theta);
+        theta += ADD;
+
     // cube1.rotation.x +=ADD
     // cube1.rotation.y +=ADD
-    target.position.x = 10 * Math.sin(theta)
-    target.position.z = 10 * Math.cos(theta)
-    theta +=ADD
-    camera.lookAt(target.position)
+    // target.position.x = 10 * Math.sin(theta)
+    // target.position.z = 10 * Math.cos(theta)
+    //theta +=ADD
+    //camera.lookAt(target.position)
     renderer.render(scene, camera);
     requestAnimationFrame(mainLoop);
 };
 
 init();
 addLight()
-// addCube()
+addCube()
 //addTriangle()
-// addPlane()
-// addSphere()
+//addPlane()
+//addSphere()
 mainLoop();
 
 

@@ -116,8 +116,7 @@
         let rand = Math.random();
         if(rand < 0.05)
             balloons.push(new Balloon());
-        
-        
+                
         balloons.forEach((b, ind) => { b.advance()
                                 if(b.over) {
                                     balloons.splice(ind, 1);
