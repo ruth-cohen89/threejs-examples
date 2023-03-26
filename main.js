@@ -6,7 +6,7 @@ import { VertexNormalsHelper } from 'three/addons/helpers/VertexNormalsHelper.js
 
 let scene, camera, renderer, cube1, torus, plane;
 let sphere, box, cylinder, light, ambient, rayCast, mouse;
-let geometry, material;
+let geometry, material, texture;
 let ADD = 0.02, theta = 0;
 let target
 const RADIUS = 5, BASE_X = -20, BASE_Y = -20;
@@ -16,16 +16,17 @@ let balloons = []
 let addLight = function() {
     //ambient = new THREE.AmbientLight(0xffffff);
     //light = new THREE.HemisphereLight(0x00ff00,0x0000ff)
-    light = new THREE.DirectionalLight(0xffffff)
-    light = new THREE.SpotLight(0xffffff, 1)
-    light.position.y = 1
-    light.position.z = 2
+    light = new THREE.DirectionalLight(0xffffff, 1)
+    //light = new THREE.SpotLight(0xffffff, 1)
+    light.position.y = 10
+    light.position.z = 20
     light.position.x =0
 
     light.castShadow = true
     light.shadow.bias = 0.0001
     light.shadow.mapSize.width = 2048
     light.shadow.mapSize.height = 1024
+
 
     scene.add(light);
     //scene.add(ambient);
@@ -68,11 +69,9 @@ let init = function() {
     scene.fog = new THREE.Fog( 0x000000);
 
     camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 1000);
-    //camera.position.set(0, 0, 40);
-    target = new THREE.Object3D()
-    camera.lookAt(target.position)
+    camera.position.set(0, 10, 40);
 
-    //addSphere()
+    createGeometry();
     // rayCast = new THREE.Raycaster() 
     // mouse = new THREE.Vector2();
     // mouse.x = mouse.y = -1 
@@ -184,18 +183,52 @@ let addCube = function() {
 }
 
 let addPlane = function () {
-    geometry = new THREE.PlaneGeometry(1000, 1000, 50, 50)
-    geometry = new THREE.PlaneGeometry(10, 10);
-    material = new THREE.MeshStandardMaterial({color: 0X693421, wireframe: true, shininess:100});
-
+    geometry = new THREE.PlaneGeometry(1000, 1,1000)
+    //geometry = new THREE.PlaneGeometry(10, 10);
+    let texture = new THREE.TextureLoader().load('https://upload.wikimedia.org/wikipedia/commons/3/3b/Tuff_ohyaishi02.jpg');
+    //material = new THREE.MeshStandardMaterial({color: 0X693421, wireframe: true});
+    material = new THREE.MeshBasicMaterial({map: texture, side: THREE.DoubleSide})    
     plane = new THREE.Mesh(geometry, material);
-    plane.rotation.x = Math.PI / 2;
-    plane.position.y = -100;
+    plane.rotation.x = 2;
+    plane.position.y = -1;
     plane.castShadow = false;
 	plane.receiveShadow = true;
 
     scene.add(plane);
 }
+
+let createGeometry = function() {
+    // Create the plane
+    // Image courtousy to By Ji-Elle - Own work, CC BY-SA 3.0, https://commons.wikimedia.org/w/index.php?curid=9429566
+    let texture = new THREE.TextureLoader().load('https://upload.wikimedia.org/wikipedia/commons/thumb/1/16/Adrar_sands.JPG/1280px-Adrar_sands.JPG');
+    let material = new THREE.MeshLambertMaterial({map: texture});
+    let geometry = new THREE.BoxGeometry(1000, 1, 1000);
+    plane = new THREE.Mesh(geometry, material);
+    plane.position.y = -1;
+    plane.receiveShadow = true;
+    addLight()
+
+    scene.add(plane);
+    
+    
+    scene.add(createPyramid(0, 0, 0, 20, 25));
+    scene.add(createPyramid(10, 0, -20, 30, 40));
+    scene.add(createPyramid(30, 0, -30, 25, 35));
+    scene.add(createPyramid(-15, 0, -15, 10, 10));
+    
+};
+
+let createPyramid = function(x, y, z, width, height) {
+    // image courtesy of By ​Japanese Wikipedia user Miya.m, CC BY-SA 3.0, https://commons.wikimedia.org/w/index.php?curid=281620
+    let texture = new THREE.TextureLoader().load('https://upload.wikimedia.org/wikipedia/commons/3/3b/Tuff_ohyaishi02.jpg');
+    let geometry = new THREE.CylinderGeometry(0, width, height, 4);
+    let material = new THREE.MeshLambertMaterial({map: texture});
+    let p = new THREE.Mesh(geometry, material);
+    p.position.set(x, y, z);
+    p.castShadow = true;
+    p.receiveShadow = true;
+    return p;
+};
 
 let addParticles = function() {
     material = new THREE.PointsMaterial({color: 0xbbbbbb, size:0.5})
@@ -233,7 +266,7 @@ let addTriangle = function(){
 
      scene.add(mesh);
 }
-
+// TODO: Fix shadows and light shadow
 let mainLoop = function() {
     light.position.x = 10 * Math.sin(theta);
         light.position.z = 10 * Math.cos(theta);
@@ -250,8 +283,7 @@ let mainLoop = function() {
 };
 
 init();
-addLight()
-addCube()
+//addCube()
 //addTriangle()
 //addPlane()
 //addSphere()
