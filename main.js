@@ -7,7 +7,8 @@ import { VertexNormalsHelper } from 'three/addons/helpers/VertexNormalsHelper.js
 let scene, camera, renderer, cube1, torus, plane;
 let sphere, box, cylinder, light, ambient, rayCast, mouse;
 let geometry, material;
-let ADD = 0.2, theta = 0;
+let ADD = 0.02, theta = 0;
+let target
 const RADIUS = 5, BASE_X = -20, BASE_Y = -20;
 let balloons = []
 
@@ -59,7 +60,9 @@ let init = function() {
     scene = new THREE.Scene();
     scene.background = new THREE.Color(0xffffff);
     camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 1000);
-    camera.position.set(0, 0, 40);
+    //camera.position.set(0, 0, 40);
+    target = new THREE.Object3D()
+    camera.lookAt(target.position)
 
     addSphere()
     rayCast = new THREE.Raycaster() 
@@ -70,16 +73,30 @@ let init = function() {
     renderer.setSize(window.innerWidth, window.innerHeight); 
 
     document.body.appendChild(renderer.domElement);
-    document.addEventListener('click', onMouseClick, false)
+    //document.addEventListener('click', onMouseClick, false)
     
 };
 
 let addSphere = function() {
-    geometry = new THREE.SphereGeometry(3, 30, 30)
-    material = new THREE.MeshStandardMaterial({
-        shininess: 100, side: THREE.DoubleSide,
-        color: 0X0450fb
-    });
+    let texture = new THREE.TextureLoader().load('https://images.pexels.com/photos/64296/pexels-photo-64296.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2')
+    // material = new THREE.MeshStandardMaterial({
+    //     side: THREE.DoubleSide,
+    //     color: 0X0f1d89,
+    //     shininess:100
+    // });
+
+    texture.wrapS = THREE.RepeatWrapping
+    texture.wrapT = THREE.RepeatWrapping
+
+    texture.repeat.set(4, 4)
+
+    material = new THREE.MeshBasicMaterial({map: texture, side: THREE.DoubleSide})
+
+    geometry = new THREE.SphereGeometry(60,50,50)
+    // material = new THREE.MeshStandardMaterial({
+    //     shininess: 100, side: THREE.DoubleSide,
+    //     color: 0X0450fb
+    // });
 
     // for(let i = 0; i < 4; i++)
     //     for(let j = 0; j < 4; j++) {
@@ -128,15 +145,17 @@ let addCylinder = function(){
 }
 
 let addCube = function() {
-    geometry = new THREE.BoxGeometry(10,10,10);
-    material = new THREE.MeshStandardMaterial({
-        side: THREE.DoubleSide,
-        color: 0X0f1d89,
-        shininess:100
-    });
+    geometry = new THREE.BoxGeometry(60,60,60);
+    let texture = new THREE.TextureLoader().load('https://thumbs.dreamstime.com/z/aster-flowers-art-design-26968847.jpg')
+    // material = new THREE.MeshStandardMaterial({
+    //     side: THREE.DoubleSide,
+    //     color: 0X0f1d89,
+    //     shininess:100
+    // });
 
+    material = new THREE.MeshBasicMaterial({map: texture, side: THREE.DoubleSide})
     cube1 = new THREE.Mesh(geometry, material);
-    cube1.position.z = -12;
+    cube1.position.z = -13;
     cube1.position.y = -2;
     cube1.position.x = 2;
 
@@ -192,27 +211,19 @@ let addTriangle = function(){
 }
 
 let mainLoop = function() {
-    let rand = Math.random() * (1 - 0) + 0;
-    if(rand < 0.05) {
-        addSphere()
-    }
-     
-    balloons.forEach((b,ind) => {
-        b.position.y += ADD
-        if (b.position.y>50) {
-            balloons.splice(ind, 1);
-            scene.remove(b.object);      
-        }
-
-    }) 
-
+    // cube1.rotation.x +=ADD
+    // cube1.rotation.y +=ADD
+    target.position.x = 10 * Math.sin(theta)
+    target.position.z = 10 * Math.cos(theta)
+    theta +=ADD
+    camera.lookAt(target.position)
     renderer.render(scene, camera);
     requestAnimationFrame(mainLoop);
 };
 
 init();
 addLight()
-//addCube()
+// addCube()
 //addTriangle()
 // addPlane()
 // addSphere()
