@@ -7,10 +7,11 @@ import { VertexNormalsHelper } from 'three/addons/helpers/VertexNormalsHelper.js
 let scene, camera, renderer, cube1, torus, plane;
 let sphere, box, cylinder, light, ambient, rayCast, mouse;
 let geometry, material;
-let ADD = 0.02, theta = 0;
+let ADD = 0.2, theta = 0;
 const RADIUS = 5, BASE_X = -20, BASE_Y = -20;
+let balloons = []
 
-let normals
+
 let addLight = function() {
     ambient = new THREE.AmbientLight(0xffffff);
     //light = new THREE.HemisphereLight(0x00ff00,0x0000ff)
@@ -29,10 +30,29 @@ let onMouseClick = function(e) {
     // normalizing
     mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
     mouse.y = - (e.clientY / window.innerHeight) * 2 + 1;
-    
+    mouse.z = 1
+
     rayCast.setFromCamera(mouse, camera);
+    //console.log(rayCast.ray.at(40))
     let intersects = rayCast.intersectObjects(scene.children);
-    intersects.forEach(obj => obj.object.position.y += 1);
+
+    
+    if(intersects.length == 0)
+            return;
+
+        // Take the first baloon only
+        let hit = intersects[0].object;
+    console.log(intersects)
+    // if hitting a baloon
+    balloons.forEach((b,ind) => {
+        if(b == hit) {
+            console.log('hit')
+            balloons.splice(ind, 1);
+            scene.remove(b);
+        }
+    });
+
+    
 }
 
 let init = function() {
@@ -41,7 +61,7 @@ let init = function() {
     camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 1000);
     camera.position.set(0, 0, 40);
 
-    addCube()
+    addSphere()
     rayCast = new THREE.Raycaster() 
     mouse = new THREE.Vector2();
     mouse.x = mouse.y = -1 
@@ -50,28 +70,30 @@ let init = function() {
     renderer.setSize(window.innerWidth, window.innerHeight); 
 
     document.body.appendChild(renderer.domElement);
-    document.addEventListener('mousemove', onMouseClick, false)
+    document.addEventListener('click', onMouseClick, false)
     
 };
 
 let addSphere = function() {
-  geometry = new THREE.SphereGeometry(1, 30, 30)
-  //material = new THREE.MeshBasicMaterial({color: 0xbbbbbb, wireframe: true});
-  material = new THREE.MeshStandardMaterial({
-    shininess: 100, side: THREE.DoubleSide,
-    color: 0X0450fb
-});
+    geometry = new THREE.SphereGeometry(3, 30, 30)
+    material = new THREE.MeshStandardMaterial({
+        shininess: 100, side: THREE.DoubleSide,
+        color: 0X0450fb
+    });
 
-    for(let i = 0; i < 4; i++)
-        for(let j = 0; j < 4; j++) {
-            geometry = new THREE.SphereGeometry(RADIUS, 30, 30);
+    // for(let i = 0; i < 4; i++)
+    //     for(let j = 0; j < 4; j++) {
+            
             sphere = new THREE.Mesh(geometry, material);
-            sphere.position.x = BASE_X + j * 2 * (RADIUS+0.5);
-            sphere.position.z = -2*RADIUS * i;
-            sphere.position.y = BASE_Y + i * RADIUS;
+            // sphere.position.x = BASE_X + j * 2 * (RADIUS+0.5);
+            // sphere.position.z = -2*RADIUS * i;
+            // sphere.position.y = BASE_Y + i * RADIUS;
+            sphere.position.x = Math.random() * (30 - -20) + -20;
+            sphere.position.y = Math.random() * (20 - -30) + -20;
+            sphere.position.z = Math.random() * (20 - -2) + -20;
             scene.add(sphere);
-        }  
-
+            balloons.push(sphere)
+        //}  
 }
 
 let addTorus = function() {
@@ -138,8 +160,8 @@ let addParticles = function() {
     
     //Math.random() * (max - min) + min;
     for (let i=0; i<=100; i++) {
-        let x = Math.random() * (20 - 20) + 20;
-        let y = Math.random() * (20 - 20) + 20;
+        let x = Math.random() * (30 - -20) + -20;
+        let y = Math.random() * (20 - -20) + -20;
         let z = Math.random() * (20 - 20) + 20;
         geometry.vertices.push(new THREE.Vector3(x, y, z));
     }
@@ -170,8 +192,19 @@ let addTriangle = function(){
 }
 
 let mainLoop = function() {
-    //cube1.material.color.set(0X0f1d89)
+    let rand = Math.random() * (1 - 0) + 0;
+    if(rand < 0.05) {
+        addSphere()
+    }
+     
+    balloons.forEach((b,ind) => {
+        b.position.y += ADD
+        if (b.position.y>50) {
+            balloons.splice(ind, 1);
+            scene.remove(b.object);      
+        }
 
+    }) 
 
     renderer.render(scene, camera);
     requestAnimationFrame(mainLoop);
@@ -185,6 +218,5 @@ addLight()
 // addSphere()
 mainLoop();
 
-// document.addEventListener('click', (e)=>{console.log(e.clientY)}, false)
 
    
