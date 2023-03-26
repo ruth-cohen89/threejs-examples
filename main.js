@@ -5,7 +5,7 @@ import { VertexNormalsHelper } from 'three/addons/helpers/VertexNormalsHelper.js
 
 
 let scene, camera, renderer, cube1, torus, plane;
-let sphere, box, cylinder, light, ambient;
+let sphere, box, cylinder, light, ambient, rayCast, mouse;
 let geometry, material;
 let ADD = 0.02, theta = 0;
 const RADIUS = 5, BASE_X = -20, BASE_Y = -20;
@@ -20,25 +20,38 @@ let addLight = function() {
     light.position.z = 2
     light.position.x =0
 
-    //const helper = new THREE.DirectionalLightHelper( light, 5, 0x000000 );
-
     scene.add(light);
     scene.add(ambient);
     //scene.add(helper);
+}
+
+let onMouseClick = function(e) {
+    // normalizing
+    mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+    mouse.y = - (e.clientY / window.innerHeight) * 2 + 1;
+    
+    rayCast.setFromCamera(mouse, camera);
+    let intersects = rayCast.intersectObjects(scene.children);
+    intersects.forEach(obj => obj.object.position.y += 1);
 }
 
 let init = function() {
     scene = new THREE.Scene();
     scene.background = new THREE.Color(0xffffff);
     camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 1000);
-    //camera = new THREE.OrthographicCamera(-300, 300, 400, -400, 1, 1000);
-    //camera.position.z = 10;
-    //camera.position.x = 0;
     camera.position.set(0, 0, 40);
+
+    addCube()
+    rayCast = new THREE.Raycaster() 
+    mouse = new THREE.Vector2();
+    mouse.x = mouse.y = -1 
 
     renderer = new THREE.WebGLRenderer();   
     renderer.setSize(window.innerWidth, window.innerHeight); 
+
     document.body.appendChild(renderer.domElement);
+    document.addEventListener('mousemove', onMouseClick, false)
+    
 };
 
 let addSphere = function() {
@@ -93,23 +106,17 @@ let addCylinder = function(){
 }
 
 let addCube = function() {
-    geometry = new THREE.BoxGeometry(3,3,3);
-   //  material = new THREE.MeshBasicMaterial({color: 0xbbbbbb, wireframe: true})
-    material = new THREE.MeshDepthMaterial();
-    // material = new THREE.MeshStandardMaterial({
-    //     side: THREE.DoubleSide,
-    //     color: 0X0f1d89,
-    //     // emissive: 0x25673d,
-    //     // emissiveIntensity: 0.4,
-    //     // metalness: 1,
-    //     // roughness: 1,
-    //     shininess:100
-    // });
+    geometry = new THREE.BoxGeometry(10,10,10);
+    material = new THREE.MeshStandardMaterial({
+        side: THREE.DoubleSide,
+        color: 0X0f1d89,
+        shininess:100
+    });
 
     cube1 = new THREE.Mesh(geometry, material);
     cube1.position.z = -12;
-    cube1.position.y = 0;
-    cube1.position.x = 0;
+    cube1.position.y = -2;
+    cube1.position.x = 2;
 
     scene.add(cube1);
 }
@@ -155,31 +162,17 @@ let addTriangle = function(){
     ] );
 
  
-    geometry.setAttribute( 'position', new THREE.BufferAttribute( vertices, 3 ) );
- material = new THREE.MeshBasicMaterial( { color: 0xff0000 } );
-const mesh = new THREE.Mesh( geometry, material );
+   geometry.setAttribute( 'position', new THREE.BufferAttribute( vertices, 3 ) );
+   material = new THREE.MeshBasicMaterial( { color: 0xff0000 } );
+    const mesh = new THREE.Mesh( geometry, material );
 
      scene.add(mesh);
 }
 
 let mainLoop = function() {
-    camera.lookAt(new THREE.Vector3(0, 0, 0))
+    //cube1.material.color.set(0X0f1d89)
 
-    sphere.position.y = 20 * Math.sin(theta)
-    sphere.position.x = 20 * Math.cos(theta)
-    theta+=ADD
-    // camera.position.x = 40 * Math.sin(theta)
-    // camera.position.z = 40 * Math.cos(theta)
-    // theta += ADD
-    // camera.fov += 0.5
-//     camera.position.x = 40 * Math.sin(theta);
-//     camera.position.z = 40 * Math.cos(theta);
-//     theta += ADD;
-//    camera.updateProjectionMatrix ()
-    // if(camera.fov > 100 || camera.fov < 50){
-    //         ADD *=-1
-  
-    // }
+
     renderer.render(scene, camera);
     requestAnimationFrame(mainLoop);
 };
@@ -189,8 +182,9 @@ addLight()
 //addCube()
 //addTriangle()
 // addPlane()
-addSphere()
+// addSphere()
 mainLoop();
 
+// document.addEventListener('click', (e)=>{console.log(e.clientY)}, false)
 
    
