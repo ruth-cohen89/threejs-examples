@@ -6,7 +6,7 @@ let scene, camera, renderer, cube1, torus, plane;
 let sphere, box, cylinder, light, ambient, rayCast, mouse;
 let geometry, material, texture;
 let spotLight1, spotLight2, target1, target2;
-let ADD = 0.1, theta = 0;
+let ADD = 0.02, theta = 0;
 let target, helper;
 const RADIUS = 5, BASE_X = -20, BASE_Y = -20;
 let balloons = []
@@ -158,7 +158,7 @@ let addPlane = function () {
     geometry = new THREE.PlaneGeometry(1000, 1,1000)
     //geometry = new THREE.PlaneGeometry(10, 10);
     let texture = new THREE.TextureLoader().load('https://upload.wikimedia.org/wikipedia/commons/3/3b/Tuff_ohyaishi02.jpg');
-    material = new THREE.MeshBasicMaterial({color: 0X693421, side: THREE.DoubleSide});
+    material = new THREE.MeshBasicMaterial({color: 0X693421, wireframe: true, side: THREE.DoubleSide});
     //material = new THREE.MeshBasicMaterial({map: texture, side: THREE.DoubleSide})    
     plane = new THREE.Mesh(geometry, material);
     //plane.rotation.x = 2;
