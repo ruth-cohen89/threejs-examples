@@ -5,28 +5,13 @@ import {OrbitControls} from 'three/examples/jsm/controls/orbitControls'
 let scene, camera, renderer, cube1, torus, plane;
 let sphere, box, cylinder, light, ambient, rayCast, mouse;
 let geometry, material, texture;
-let ADD = 0.02, theta = 0;
+let spotLight1, spotLight2, target1, target2;
+let ADD = 0.1, theta = 0;
 let target, helper;
 const RADIUS = 5, BASE_X = -20, BASE_Y = -20;
 let balloons = []
+let cubes = []
 
-let addLight = function() {
-    light = new THREE.DirectionalLight( 0xffffff, 1 );
-    light.position.set( 0,10, 0 ); //default; light shining from top
-    light.castShadow = true; // default false
-    scene.add( light );
-
-    //Set up shadow properties for the light
-    light.shadow.mapSize.width = 512; // default
-    light.shadow.mapSize.height = 512; // default
-    light.shadow.camera.near = 0.5; // default
-    light.shadow.camera.far = 500; // default
-
-    //helper = new THREE.DirectionalLightHelper( light, 5 ); 
-
-    scene.add(light);
-    //scene.add(helper);
-}
 
 let onMouseClick = function(e) {
     // normalizing
@@ -56,31 +41,6 @@ let onMouseClick = function(e) {
 
     
 }
-
-let init = function() {
-    scene = new THREE.Scene();
-    scene.background = new THREE.Color(0xffffff);
-    // scene.background = new THREE.Color(0x000000);
-    //scene.fog = new THREE.Fog( 0x000000);
-
-    camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 1000);
-    camera.position.set(0, 10, 40);
-
-    addLight()
-    createGeometry();
-    // rayCast = new THREE.Raycaster() 
-    // mouse = new THREE.Vector2();
-    // mouse.x = mouse.y = -1 
-
-    renderer = new THREE.WebGLRenderer();   
-    renderer.setSize(window.innerWidth, window.innerHeight); 
-    renderer.shadowMap.enabled = true
-    renderer.shadowMap.type = THREE.PCFShadowMap
-
-    document.body.appendChild(renderer.domElement);
-    //document.addEventListener('click', onMouseClick, false)
-    
-};
 
 let addSphere = function() {
     //let texture = new THREE.TextureLoader().load('https://images.pexels.com/photos/64296/pexels-photo-64296.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2')
@@ -151,7 +111,23 @@ let addCylinder = function(){
 
 }
 
-let addCube = function() {
+let createCube = function() {
+  let w = Math.random() * (8 - 5) + 5;
+  let h = Math.random() * (8 - 5) + 5;
+  let d = Math.random() * (8 - 5) + 5;
+
+    geometry = new THREE.BoxGeometry(w, h, d);
+    material = new THREE.MeshPhongMaterial(
+                                { color: Math.random() * 0xffffff });
+
+    let cube = new THREE.Mesh( geometry, material );
+    cube.position.x = Math.random() * (20 - -20) + -20;
+    cube.position.z = Math.random() * (20 - -20) + -20;
+ 
+    cubes.push(cube);
+};
+
+let addCubes = function() {
     geometry = new THREE.BoxGeometry(5, 5, 5);
     //let texture = new THREE.TextureLoader().load('https://thumbs.dreamstime.com/z/aster-flowers-art-design-26968847.jpg')
     //material = new THREE.MeshBasicMaterial({map: texture, side: THREE.DoubleSide})    
@@ -182,11 +158,11 @@ let addPlane = function () {
     geometry = new THREE.PlaneGeometry(1000, 1,1000)
     //geometry = new THREE.PlaneGeometry(10, 10);
     let texture = new THREE.TextureLoader().load('https://upload.wikimedia.org/wikipedia/commons/3/3b/Tuff_ohyaishi02.jpg');
-    //material = new THREE.MeshStandardMaterial({color: 0X693421, wireframe: true});
-    material = new THREE.MeshBasicMaterial({map: texture, side: THREE.DoubleSide})    
+    material = new THREE.MeshBasicMaterial({color: 0X693421, side: THREE.DoubleSide});
+    //material = new THREE.MeshBasicMaterial({map: texture, side: THREE.DoubleSide})    
     plane = new THREE.Mesh(geometry, material);
-    plane.rotation.x = 2;
-    plane.position.y = -1;
+    //plane.rotation.x = 2;
+    plane.position.y = -2;
     plane.castShadow = false;
 	plane.receiveShadow = true;
 
@@ -205,7 +181,7 @@ let createPyramid = function(x, y, z, width, height) {
     return p;
 };
 
-let createGeometry = function() {
+let createDesert = function() {
   // Create the plane
     // Image courtousy to By Ji-Elle - Own work, CC BY-SA 3.0, https://commons.wikimedia.org/w/index.php?curid=9429566
     let texture = new THREE.TextureLoader().load('https://upload.wikimedia.org/wikipedia/commons/thumb/1/16/Adrar_sands.JPG/1280px-Adrar_sands.JPG');
@@ -252,11 +228,93 @@ let addTriangle = function(){
   scene.add(mesh);
 }
 
-let mainLoop = function() {
-    light.position.x = 10 * Math.sin(theta);
-        light.position.z = 10 * Math.cos(theta);
-        theta += ADD;
+let addLight = function() {
+    light = new THREE.DirectionalLight( 0xffffff, 1 );
+    light.position.set( 0,10, 0 ); //default; light shining from top
+    light.castShadow = true; // default false
+    scene.add( light );
 
+    //Set up shadow properties for the light
+    light.shadow.mapSize.width = 512; // default
+    light.shadow.mapSize.height = 512; // default
+    light.shadow.camera.near = 0.5; // default
+    light.shadow.camera.far = 500; // default
+
+    //helper = new THREE.DirectionalLightHelper( light, 5 ); 
+
+    scene.add(light);
+    //scene.add(helper);
+}
+
+
+let addLights = function() {
+    spotLight1 = new THREE.SpotLight(0xffffff, 1);
+    spotLight1.position.set(15, 20, 10);
+    spotLight1.angle = Math.PI / 20;
+    spotLight1.penumbra = 0.05;
+    spotLight1.decay = 2;
+    spotLight1.distance = 200;
+    
+    scene.add(spotLight1);  
+    
+    target1 = new THREE.Object3D();
+    target1.position.set(20, 0, 0);
+    spotLight1.target = target1;
+    
+    scene.add(target1);
+    
+    spotLight2 = new THREE.SpotLight(0xffffff, 1);
+    spotLight2.position.set(-15, 20, 10);
+    spotLight2.angle = Math.PI / 20;
+    spotLight2.penumbra = 0.05;
+    spotLight2.decay = 2;
+    spotLight2.distance = 200;
+    
+    scene.add(spotLight2);
+    
+    target2 = new THREE.Object3D();
+    target1.position.set(-10, 0, 0);
+    spotLight2.target = target2;
+    
+    scene.add(target2);
+}
+
+let init = function() {
+    scene = new THREE.Scene();
+    // scene.background = new THREE.Color(0xffffff);
+    scene.background = new THREE.Color(0x000000);
+    // scene.fog = new THREE.Fog( 0x000000);
+
+    camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 1000);
+    camera.position.set(0, 10, 40);
+
+    addLights()
+    addPlane()
+    for(let i = 1; i <= 10; i++)
+    createCube();
+
+    cubes.forEach(cube => scene.add(cube));
+    // rayCast = new THREE.Raycaster() 
+    // mouse = new THREE.Vector2();
+    // mouse.x = mouse.y = -1 
+
+    renderer = new THREE.WebGLRenderer();   
+    renderer.setSize(window.innerWidth, window.innerHeight); 
+    renderer.shadowMap.enabled = true
+    renderer.shadowMap.type = THREE.PCFShadowMap
+
+    document.body.appendChild(renderer.domElement);    
+};
+
+let mainLoop = function() {
+    // light.position.x = 10 * Math.sin(theta);
+    //     light.position.z = 10 * Math.cos(theta);
+    //     theta += ADD;
+
+    target1.position.x -= ADD;
+    target2.position.x += ADD;
+    if(target1.position.x < -20 || target1.position.x > 20)
+        ADD *= -1;
     renderer.render(scene, camera);
     requestAnimationFrame(mainLoop);
 };
